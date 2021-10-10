@@ -17,7 +17,7 @@ import java.util.regex.Pattern
 import scala.collection.JavaConverters.*
 import scala.collection.mutable.ListBuffer
 
-object mr1 {
+object mr2 {
 
   class TokenizerMapper extends Mapper[Object, Text, Text, IntWritable] {
 
