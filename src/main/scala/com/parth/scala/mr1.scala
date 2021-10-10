@@ -42,7 +42,7 @@ object mr1 {
           val formatted = new SimpleDateFormat("HH:mm:ss").format(timex)
 //          val message : String = matcher.group(2)
           val message : String = "ERROR"
-          context.write(new Text("Interval ID: " + group_number + "\tInterval Start: " + formatted + "\t Message: " + message), one)
+          context.write(new Text(group_number.toString), one)
         }
       }
     }
