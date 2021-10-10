@@ -17,7 +17,7 @@ object mr3 {
     val word = new Text()
 
     override def map(key: Object, value: Text, context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
-      val pattern = Pattern.compile("(INFO|ERROR|WARN|DEBUG) .* - (.*)")
+      val pattern = Pattern.compile("(INFO|ERROR|WARN|DEBUG).*- (.*)")
       val matcher = pattern.matcher(value.toString)
       if (matcher.find()){
         val message = matcher.group(1)
