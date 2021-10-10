@@ -17,7 +17,7 @@ import java.util.regex.Pattern
 import scala.collection.JavaConverters.*
 import scala.collection.mutable.ListBuffer
 
-object mr2 {
+object mr4 {
 
   class TokenizerMapper extends Mapper[Object, Text, Text, IntWritable] {
 
@@ -25,25 +25,19 @@ object mr2 {
     val word = new Text()
 
     override def map(key: Object, value: Text, context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
-      val intervals = context.getConfiguration.get("Interval").toInt
       //To get absolute value of time and divide
       // To filter using pattern_match
-      val pattern = Pattern.compile("(.*) \\[.*\\] (ERROR).*- (.*)")
+      val pattern = Pattern.compile("(INFO|ERROR|WARN|DEBUG).*- (.*)")
       val matcher = pattern.matcher(value.toString)
       if (matcher.find()){
-
+        val group = matcher.group(1)
+        val message = matcher.group(2)
         val pattern_match = Pattern.compile(".*")
-        //to add pattern from config file
+        // to add pattern from config file
 //        val pattern_match = Pattern.compile("([a-c][e-g][0-3]|[A-Z][5-9][f-w]){5,15}")
-        val pattern_matcher = pattern_match.matcher(matcher.group(3))
+        val pattern_matcher = pattern_match.matcher(message)
         if (pattern_matcher.find()){
-          val timex = new SimpleDateFormat("HH:mm:ss.SSS").parse(matcher.group(1))
-          val group_number = new SimpleDateFormat("mmss").format(timex).toInt/intervals
-          val seconds = TimeUnit.MILLISECONDS.toSeconds(timex.getTime)
-          val formatted = new SimpleDateFormat("HH:mm:ss").format(timex)
-//          val message : String = matcher.group(2)
-          val message : String = "ERROR"
-          context.write(new Text(group_number.toString), one)
+          context.write(new Text(group), new IntWritable(message.length))
         }
       }
     }
@@ -51,8 +45,8 @@ object mr2 {
 
   class IntSumReader extends Reducer[Text,IntWritable,Text,IntWritable] {
     override def reduce(key: Text, values: Iterable[IntWritable], context: Reducer[Text, IntWritable, Text, IntWritable]#Context): Unit = {
-      val sum = values.asScala.foldLeft(0)(_ + _.get)
-      context.write(key, new IntWritable(sum))
+      val maxv = values.asScala.foldLeft(0){(max, curr) => math.max(max, curr.get)}
+      context.write(key, new IntWritable(maxv))
     }
   }
 
@@ -61,7 +55,6 @@ object mr2 {
     val configuration = new Configuration
     // Add config file to store global regex
     val pattern_match = "([a-c][e-g][0-3]|[A-Z][5-9][f-w]){5,15}"
-    configuration.set("Interval", args(2))
     configuration.set("pattern_match", pattern_match)
     import org.apache.hadoop.fs.FileSystem
     val fs = FileSystem.get(configuration)
