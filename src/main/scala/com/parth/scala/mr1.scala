@@ -1,15 +1,22 @@
 package com.parth.scala
 
+import org.apache.commons.beanutils.converters.DateTimeConverter
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.{IntWritable, Text}
+import org.apache.hadoop.io.{IntWritable, Text, Writable}
+import org.apache.hadoop.mapred.join.TupleWritable
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
 import org.apache.hadoop.mapreduce.{Job, Mapper, Reducer}
-import java.util.regex.Pattern
-import scala.collection.JavaConverters._
+
 import java.lang.Iterable
-object mr3 {
+import java.text.SimpleDateFormat
+import java.time.LocalTime
+import java.util.regex.Pattern
+import scala.collection.JavaConverters.*
+import scala.collection.mutable.ListBuffer
+
+object mr1 {
 
   class TokenizerMapper extends Mapper[Object, Text, Text, IntWritable] {
 
@@ -17,11 +24,22 @@ object mr3 {
     val word = new Text()
 
     override def map(key: Object, value: Text, context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
-      val pattern = Pattern.compile("(INFO|ERROR|WARN|DEBUG) .* - (.*)")
+      val intervals = context.getConfiguration.get("Interval").toInt
+      //To get absolute value of time and divide
+      // To filter using pattern_match
+      val pattern = Pattern.compile("(.*) \\[.*\\] (INFO|ERROR|WARN|DEBUG) .* - (.*)")
       val matcher = pattern.matcher(value.toString)
       if (matcher.find()){
-        val message = matcher.group(1)
-        context.write(new Text(message), one)
+
+        val pattern_match = Pattern.compile("([a-c][e-g][0-3]|[A-Z][5-9][f-w]){5,15}")
+        val pattern_matcher = pattern_match.matcher(matcher.group(3))
+        if (pattern_matcher.find()){
+//          val group_number = new SimpleDateFormat("HH:mm:ss:SSS")
+          val start_second = (new SimpleDateFormat("HH:mm:ss.SSS").parse(matcher.group(1)).toInstant.toEpochMilli).toInt
+          val group_number : String = (start_second/(1000 * intervals)).toString
+          val message : String = matcher.group(2)
+          context.write(new Text("Group: " + group_number + "\t Message: " + message), one)
+        }
       }
     }
   }
@@ -36,6 +54,10 @@ object mr3 {
 
   def main(args: Array[String]): Unit = {
     val configuration = new Configuration
+    // Add config file to store global regex
+    val pattern_match = "([a-c][e-g][0-3]|[A-Z][5-9][f-w]){5,15}"
+    configuration.set("Interval", args(2))
+    configuration.set("pattern_match", pattern_match)
     import org.apache.hadoop.fs.FileSystem
     val fs = FileSystem.get(configuration)
     if (fs.exists(new Path(args(1)))) fs.delete(new Path(args(1)), true)
