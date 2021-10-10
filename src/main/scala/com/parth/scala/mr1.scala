@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce.{Job, Mapper, Reducer}
 import java.lang.Iterable
 import java.text.SimpleDateFormat
 import java.time.LocalTime
+import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import scala.collection.JavaConverters.*
 import scala.collection.mutable.ListBuffer
@@ -34,11 +35,12 @@ object mr1 {
         val pattern_match = Pattern.compile("([a-c][e-g][0-3]|[A-Z][5-9][f-w]){5,15}")
         val pattern_matcher = pattern_match.matcher(matcher.group(3))
         if (pattern_matcher.find()){
-//          val group_number = new SimpleDateFormat("HH:mm:ss:SSS")
-          val start_second = (new SimpleDateFormat("HH:mm:ss.SSS").parse(matcher.group(1)).toInstant.toEpochMilli).toInt
-          val group_number : String = (start_second/(1000 * intervals)).toString
+          val timex = new SimpleDateFormat("HH:mm:ss.SSS").parse(matcher.group(1))
+          val group_number = new SimpleDateFormat("mmss").format(timex).toInt/intervals
+          val seconds = TimeUnit.MILLISECONDS.toSeconds(timex.getTime)
+          val formatted = new SimpleDateFormat("HH:mm:ss").format(timex)
           val message : String = matcher.group(2)
-          context.write(new Text("Group: " + group_number + "\t Message: " + message), one)
+          context.write(new Text("Interval ID: " + group_number + "\tInterval Start: " + formatted + "\t Message: " + message), one)
         }
       }
     }
