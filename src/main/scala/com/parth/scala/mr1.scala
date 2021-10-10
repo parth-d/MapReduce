@@ -28,18 +28,20 @@ object mr1 {
       val intervals = context.getConfiguration.get("Interval").toInt
       //To get absolute value of time and divide
       // To filter using pattern_match
-      val pattern = Pattern.compile("(.*) \\[.*\\] (INFO|ERROR|WARN|DEBUG) .* - (.*)")
+      val pattern = Pattern.compile("(.*) \\[.*\\] (ERROR).*- (.*)")
       val matcher = pattern.matcher(value.toString)
       if (matcher.find()){
 
-        val pattern_match = Pattern.compile("([a-c][e-g][0-3]|[A-Z][5-9][f-w]){5,15}")
+        val pattern_match = Pattern.compile(".*")
+//        val pattern_match = Pattern.compile("([a-c][e-g][0-3]|[A-Z][5-9][f-w]){5,15}")
         val pattern_matcher = pattern_match.matcher(matcher.group(3))
         if (pattern_matcher.find()){
           val timex = new SimpleDateFormat("HH:mm:ss.SSS").parse(matcher.group(1))
           val group_number = new SimpleDateFormat("mmss").format(timex).toInt/intervals
           val seconds = TimeUnit.MILLISECONDS.toSeconds(timex.getTime)
           val formatted = new SimpleDateFormat("HH:mm:ss").format(timex)
-          val message : String = matcher.group(2)
+//          val message : String = matcher.group(2)
+          val message : String = "ERROR"
           context.write(new Text("Interval ID: " + group_number + "\tInterval Start: " + formatted + "\t Message: " + message), one)
         }
       }
