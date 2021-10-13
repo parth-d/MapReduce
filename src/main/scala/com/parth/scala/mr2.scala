@@ -19,37 +19,33 @@ import scala.collection.mutable.ListBuffer
 
 object mr2 {
 
-  class TokenizerMapper extends Mapper[Object, Text, Text, IntWritable] {
+  class Mapper1 extends Mapper[Object, Text, Text, IntWritable] {
 
     val one = new IntWritable(1)
     val word = new Text()
 
     override def map(key: Object, value: Text, context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
+
+      // aadd config file
+      // add logic for minumum grp
       val intervals = context.getConfiguration.get("Interval").toInt
-      //To get absolute value of time and divide
-      // To filter using pattern_match
+      val imported_pattern = context.getConfiguration.get("pattern_match")
+
       val pattern = Pattern.compile("(.*) \\[.*\\] (ERROR).*- (.*)")
       val matcher = pattern.matcher(value.toString)
       if (matcher.find()){
-
-        val pattern_match = Pattern.compile(".*")
-        //to add pattern from config file
-//        val pattern_match = Pattern.compile("([a-c][e-g][0-3]|[A-Z][5-9][f-w]){5,15}")
+        val pattern_match = Pattern.compile(imported_pattern)
         val pattern_matcher = pattern_match.matcher(matcher.group(3))
         if (pattern_matcher.find()){
           val timex = new SimpleDateFormat("HH:mm:ss.SSS").parse(matcher.group(1))
           val group_number = new SimpleDateFormat("mmss").format(timex).toInt/intervals
-          val seconds = TimeUnit.MILLISECONDS.toSeconds(timex.getTime)
-          val formatted = new SimpleDateFormat("HH:mm:ss").format(timex)
-//          val message : String = matcher.group(2)
-          val message : String = "ERROR"
           context.write(new Text(group_number.toString), one)
         }
       }
     }
   }
 
-  class IntSumReader extends Reducer[Text,IntWritable,Text,IntWritable] {
+  class Reducer1 extends Reducer[Text,IntWritable,Text,IntWritable] {
     override def reduce(key: Text, values: Iterable[IntWritable], context: Reducer[Text, IntWritable, Text, IntWritable]#Context): Unit = {
       val sum = values.asScala.foldLeft(0)(_ + _.get)
       context.write(key, new IntWritable(sum))
@@ -65,10 +61,8 @@ object mr2 {
     }
   }
 
-  class InverseMapper extends Mapper[Object, Text, IntWritable, Text]{
+  class Mapper2 extends Mapper[Object, Text, IntWritable, Text]{
     override def map(key: Object, value: Text, context: Mapper[Object, Text, IntWritable, Text]#Context): Unit ={
-//      val values = value.toString.split("\\s+")
-//      context.write(new Text(values(1)), new IntWritable(values(0).toInt))
       val pattern = Pattern.compile("(.*)\\s+(.*)")
       val matcher = pattern.matcher(value.toString)
       if (matcher.find())
@@ -76,7 +70,7 @@ object mr2 {
     }
   }
 
-  class SortReducer extends Reducer[IntWritable, Text, IntWritable, Text]{
+  class Reducer2 extends Reducer[IntWritable, Text, IntWritable, Text]{
     override def reduce(key: IntWritable, values: Iterable[Text], context: Reducer[IntWritable, Text, IntWritable, Text]#Context): Unit = {
       values.forEach(text => {
         context.write(key, text)
@@ -88,8 +82,8 @@ object mr2 {
 
   def main(args: Array[String]): Unit = {
     val configuration = new Configuration
-    // Add config file to store global regex
     val pattern_match = "([a-c][e-g][0-3]|[A-Z][5-9][f-w]){5,15}"
+    configuration.set("min_group", "10000")
     configuration.set("Interval", args(3))
     configuration.set("pattern_match", pattern_match)
     import org.apache.hadoop.fs.FileSystem
@@ -97,9 +91,9 @@ object mr2 {
     if (fs.exists(new Path(args(1)))) fs.delete(new Path(args(1)), true)
     val job = Job.getInstance(configuration, "word count")
     job.setJarByClass(this.getClass)
-    job.setMapperClass(classOf[TokenizerMapper])
-    job.setCombinerClass(classOf[IntSumReader])
-    job.setReducerClass(classOf[IntSumReader])
+    job.setMapperClass(classOf[Mapper1])
+    job.setCombinerClass(classOf[Reducer1])
+    job.setReducerClass(classOf[Reducer1])
     job.setOutputKeyClass(classOf[Text])
     job.setOutputValueClass(classOf[IntWritable])
     FileInputFormat.addInputPath(job, new Path(args(0)))
@@ -109,8 +103,8 @@ object mr2 {
       if (fs.exists(new Path(args(2)))) fs.delete(new Path(args(2)), true)
       val sortjob = Job.getInstance()
       sortjob.setJarByClass(this.getClass)
-      sortjob.setMapperClass(classOf[InverseMapper])
-      sortjob.setReducerClass(classOf[SortReducer])
+      sortjob.setMapperClass(classOf[Mapper2])
+      sortjob.setReducerClass(classOf[Reducer2])
       sortjob.setSortComparatorClass(classOf[comparator])
       sortjob.setOutputKeyClass(classOf[IntWritable])
       sortjob.setOutputValueClass(classOf[Text])
