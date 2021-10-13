@@ -1,5 +1,6 @@
 package com.parth.scala
 
+import com.typesafe.config.ConfigFactory
 import org.apache.commons.beanutils.converters.DateTimeConverter
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -32,7 +33,7 @@ object mr4 {
       if (matcher.find()){
         val group = matcher.group(1)
         val message = matcher.group(2)
-        val pattern_match = Pattern.compile(".*")
+        val pattern_match = Pattern.compile(context.getConfiguration.get("pattern_match"))
         // to add pattern from config file
 //        val pattern_match = Pattern.compile("([a-c][e-g][0-3]|[A-Z][5-9][f-w]){5,15}")
         val pattern_matcher = pattern_match.matcher(message)
@@ -52,9 +53,10 @@ object mr4 {
 
 
   def main(args: Array[String]): Unit = {
+    val config = ConfigFactory.load()
     val configuration = new Configuration
     // Add config file to store global regex
-    val pattern_match = "([a-c][e-g][0-3]|[A-Z][5-9][f-w]){5,15}"
+    val pattern_match = config.getString("main.pattern")
     configuration.set("pattern_match", pattern_match)
     import org.apache.hadoop.fs.FileSystem
     val fs = FileSystem.get(configuration)
