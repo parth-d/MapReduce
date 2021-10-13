@@ -13,6 +13,7 @@ import org.apache.hadoop.mapreduce.{Job, Mapper, Reducer}
 import java.lang.Iterable
 import java.text.SimpleDateFormat
 import java.time.LocalTime
+import java.util.Date
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import scala.collection.JavaConverters.*
@@ -39,7 +40,7 @@ object mr2 {
         val pattern_matcher = pattern_match.matcher(matcher.group(3))
         if (pattern_matcher.find()){
           val timex = new SimpleDateFormat("HH:mm:ss.SSS").parse(matcher.group(1))
-          val group_number = new SimpleDateFormat("mmss").format(timex).toInt/intervals
+          val group_number = timex.getTime.toInt/(1000*intervals)
           context.write(new Text(group_number.toString), one)
         }
       }
@@ -67,7 +68,10 @@ object mr2 {
       val pattern = Pattern.compile("(.*)\\s+(.*)")
       val matcher = pattern.matcher(value.toString)
       if (matcher.find())
-        context.write(new IntWritable(matcher.group(2).toInt), new Text(matcher.group(1)))
+        val intervals = context.getConfiguration.get("Interval").toInt
+        val date = new Date(matcher.group(1).toLong * intervals * 1000L)
+        val time = new SimpleDateFormat("mm:ss").format(date)
+        context.write(new IntWritable(matcher.group(2).toInt), new Text(time.toString))
     }
   }
 
@@ -85,8 +89,9 @@ object mr2 {
     val configfile = ConfigFactory.load()
     val configuration = new Configuration
     val pattern_match = configfile.getString("main.pattern")
+    val interval = args(3)
     configuration.set("min_group", "10000")
-    configuration.set("Interval", args(3))
+    configuration.set("Interval", interval)
     configuration.set("pattern_match", pattern_match)
     import org.apache.hadoop.fs.FileSystem
     val fs = FileSystem.get(configuration)
@@ -103,7 +108,9 @@ object mr2 {
     if (job.waitForCompletion(true)) {
 
       if (fs.exists(new Path(args(2)))) fs.delete(new Path(args(2)), true)
-      val sortjob = Job.getInstance()
+      val config2 = new Configuration()
+      config2.set("Interval", interval)
+      val sortjob = Job.getInstance(config2, "Sort")
       sortjob.setJarByClass(this.getClass)
       sortjob.setMapperClass(classOf[Mapper2])
       sortjob.setReducerClass(classOf[Reducer2])
