@@ -1,5 +1,6 @@
 package com.parth.scala
 
+import com.typesafe.config.ConfigFactory
 import org.apache.commons.beanutils.converters.DateTimeConverter
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -81,8 +82,9 @@ object mr2 {
 
 
   def main(args: Array[String]): Unit = {
+    val configfile = ConfigFactory.load()
     val configuration = new Configuration
-    val pattern_match = "([a-c][e-g][0-3]|[A-Z][5-9][f-w]){5,15}"
+    val pattern_match = configfile.getString("main.pattern")
     configuration.set("min_group", "10000")
     configuration.set("Interval", args(3))
     configuration.set("pattern_match", pattern_match)
