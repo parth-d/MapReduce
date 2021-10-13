@@ -55,8 +55,8 @@ object mr1 {
     }
   }
 
-  class Mapper2 extends Mapper[Object, Text, IntWritable, Text]{
-    override def map(key: Object, value: Text, context: Mapper[Object, Text, IntWritable, Text]#Context): Unit ={
+  class Mapper2 extends Mapper[Object, Text, Text, IntWritable]{
+    override def map(key: Object, value: Text, context: Mapper[Object, Text, Text, IntWritable]#Context): Unit ={
       val pattern = Pattern.compile("(.*)\\s+(.*)")
       val matcher = pattern.matcher(value.toString)
       if (matcher.find())
@@ -65,12 +65,12 @@ object mr1 {
         val date = new Date(cur_key(0).toLong * intervals * 1000L)
         val level = cur_key(1).toString
         val time = new SimpleDateFormat("mm:ss").format(date)
-        context.write(new IntWritable(matcher.group(2).toInt), new Text(time.toString + "\t" + level))
+        context.write(new Text(time.toString + "\t" + level), new IntWritable(matcher.group(2).toInt))
     }
   }
 
-  class Reducer2 extends Reducer[IntWritable, Text, IntWritable, Text]{
-    override def reduce(key: IntWritable, values: Iterable[Text], context: Reducer[IntWritable, Text, IntWritable, Text]#Context): Unit = {
+  class Reducer2 extends Reducer[Text, IntWritable, Text, IntWritable]{
+    override def reduce(key: Text, values: Iterable[IntWritable], context: Reducer[Text, IntWritable, Text, IntWritable]#Context): Unit = {
       values.forEach(text => {
         context.write(key, text)
       })
@@ -108,8 +108,8 @@ object mr1 {
       sortjob.setJarByClass(this.getClass)
       sortjob.setMapperClass(classOf[Mapper2])
       sortjob.setReducerClass(classOf[Reducer2])
-      sortjob.setOutputKeyClass(classOf[IntWritable])
-      sortjob.setOutputValueClass(classOf[Text])
+      sortjob.setOutputKeyClass(classOf[Text])
+      sortjob.setOutputValueClass(classOf[IntWritable])
       FileInputFormat.addInputPath(sortjob, new Path(args(1)))
       FileOutputFormat.setOutputPath(sortjob, new Path(args(2)))
       System.exit(if (sortjob.waitForCompletion(true)) 0 else 1)
