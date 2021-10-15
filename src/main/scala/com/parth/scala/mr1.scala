@@ -80,16 +80,19 @@ object mr1 {
 
 
   def main(args: Array[String]): Unit = {
+    import org.apache.hadoop.fs.FileSystem
+
     val configfile = ConfigFactory.load()
+    val pattern_match = configfile.getString("common.pattern")
+    val inp_path = configfile.getString("common.input_path")
+    val temp_path = configfile.getString("mr1.temp_path")
+    val out_path = configfile.getString("mr1.output_path")
+    val interval = configfile.getString("common.time_interval")
     val configuration = new Configuration
-    val pattern_match = configfile.getString("main.pattern")
-    val interval = args(3)
-    configuration.set("min_group", "10000")
     configuration.set("Interval", interval)
     configuration.set("pattern_match", pattern_match)
-    import org.apache.hadoop.fs.FileSystem
     val fs = FileSystem.get(configuration)
-    if (fs.exists(new Path(args(1)))) fs.delete(new Path(args(1)), true)
+    if (fs.exists(new Path(temp_path))) fs.delete(new Path(temp_path), true)
     val job = Job.getInstance(configuration, "word count")
     job.setJarByClass(this.getClass)
     job.setMapperClass(classOf[Mapper1])
@@ -97,11 +100,11 @@ object mr1 {
     job.setReducerClass(classOf[Reducer1])
     job.setOutputKeyClass(classOf[Text])
     job.setOutputValueClass(classOf[IntWritable])
-    FileInputFormat.addInputPath(job, new Path(args(0)))
-    FileOutputFormat.setOutputPath(job, new Path(args(1)))
+    FileInputFormat.addInputPath(job, new Path(inp_path))
+    FileOutputFormat.setOutputPath(job, new Path(temp_path))
     if (job.waitForCompletion(true)) {
 
-      if (fs.exists(new Path(args(2)))) fs.delete(new Path(args(2)), true)
+      if (fs.exists(new Path(out_path))) fs.delete(new Path(out_path), true)
       val config2 = new Configuration()
       config2.set("Interval", interval)
       val sortjob = Job.getInstance(config2, "Sort")
@@ -110,8 +113,8 @@ object mr1 {
       sortjob.setReducerClass(classOf[Reducer2])
       sortjob.setOutputKeyClass(classOf[Text])
       sortjob.setOutputValueClass(classOf[IntWritable])
-      FileInputFormat.addInputPath(sortjob, new Path(args(1)))
-      FileOutputFormat.setOutputPath(sortjob, new Path(args(2)))
+      FileInputFormat.addInputPath(sortjob, new Path(temp_path))
+      FileOutputFormat.setOutputPath(sortjob, new Path(out_path))
       System.exit(if (sortjob.waitForCompletion(true)) 0 else 1)
     }
   }

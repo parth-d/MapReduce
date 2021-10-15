@@ -1,13 +1,15 @@
 package com.parth.scala
 
+import com.typesafe.config.ConfigFactory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{IntWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
 import org.apache.hadoop.mapreduce.{Job, Mapper, Reducer}
+
 import java.util.regex.Pattern
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.*
 import java.lang.Iterable
 object mr3 {
 
@@ -35,10 +37,14 @@ object mr3 {
 
 
   def main(args: Array[String]): Unit = {
-    val configuration = new Configuration
     import org.apache.hadoop.fs.FileSystem
+
+    val configfile = ConfigFactory.load()
+    val inp_path = configfile.getString("common.input_path")
+    val out_path = configfile.getString("mr3.output_path")
+    val configuration = new Configuration
     val fs = FileSystem.get(configuration)
-    if (fs.exists(new Path(args(1)))) fs.delete(new Path(args(1)), true)
+    if (fs.exists(new Path(out_path))) fs.delete(new Path(out_path), true)
     val job = Job.getInstance(configuration,"word count")
     job.setJarByClass(this.getClass)
     job.setMapperClass(classOf[TokenizerMapper])
@@ -47,8 +53,8 @@ object mr3 {
     job.setOutputKeyClass(classOf[Text])
     job.setOutputKeyClass(classOf[Text]);
     job.setOutputValueClass(classOf[IntWritable]);
-    FileInputFormat.addInputPath(job, new Path(args(0)))
-    FileOutputFormat.setOutputPath(job, new Path(args(1)))
+    FileInputFormat.addInputPath(job, new Path(inp_path))
+    FileOutputFormat.setOutputPath(job, new Path(out_path))
 
     System.exit(if(job.waitForCompletion(true))  0 else 1)
   }

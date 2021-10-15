@@ -53,14 +53,17 @@ object mr4 {
 
 
   def main(args: Array[String]): Unit = {
-    val config = ConfigFactory.load()
     val configuration = new Configuration
-    // Add config file to store global regex
-    val pattern_match = config.getString("main.pattern")
+
+    val config = ConfigFactory.load()
+    val pattern_match = config.getString("common.pattern")
+    val inp_path = config.getString("common.input_path")
+    val out_path = config.getString("mr4.output_path")
+
     configuration.set("pattern_match", pattern_match)
     import org.apache.hadoop.fs.FileSystem
     val fs = FileSystem.get(configuration)
-    if (fs.exists(new Path(args(1)))) fs.delete(new Path(args(1)), true)
+    if (fs.exists(new Path(out_path))) fs.delete(new Path(out_path), true)
     val job = Job.getInstance(configuration,"word count")
     job.setJarByClass(this.getClass)
     job.setMapperClass(classOf[TokenizerMapper])
@@ -69,8 +72,8 @@ object mr4 {
     job.setOutputKeyClass(classOf[Text])
     job.setOutputKeyClass(classOf[Text]);
     job.setOutputValueClass(classOf[IntWritable]);
-    FileInputFormat.addInputPath(job, new Path(args(0)))
-    FileOutputFormat.setOutputPath(job, new Path(args(1)))
+    FileInputFormat.addInputPath(job, new Path(inp_path))
+    FileOutputFormat.setOutputPath(job, new Path(out_path))
 
     System.exit(if(job.waitForCompletion(true))  0 else 1)
   }
