@@ -1,7 +1,7 @@
 package com.parth.scala
 
+import HelperUtils.CreateLogger
 import com.typesafe.config.ConfigFactory
-
 import org.apache.commons.beanutils.converters.DateTimeConverter
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
-
 import scala.collection.JavaConverters.*
 import scala.collection.mutable.ListBuffer
 
@@ -33,7 +32,7 @@ object mr4 {
   /**
    * Mapper: Used to group and count accordingly.
    */
-  class Mapper extends Mapper[Object, Text, Text, IntWritable] {
+  class mapper extends Mapper[Object, Text, Text, IntWritable] {
     val one = new IntWritable(1)
     override def map(key: Object, value: Text, context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
 
@@ -72,7 +71,7 @@ object mr4 {
    */
   def main(args: Array[String]): Unit = {
     import org.apache.hadoop.fs.FileSystem
-    val logger = CreateLogger(classOf[GenerateLogData.type])
+    val logger = CreateLogger(classOf[mr4.type])
 
     /**
      * Extract the necessary parameters from the config file (application.conf)
@@ -101,7 +100,7 @@ object mr4 {
     logger.info("Starting the job.")
     val job = Job.getInstance(configuration,"word count")
     job.setJarByClass(this.getClass)
-    job.setMapperClass(classOf[Mapper])
+    job.setMapperClass(classOf[mapper])
     job.setCombinerClass(classOf[reducer])
     job.setReducerClass(classOf[reducer])
     job.setOutputKeyClass(classOf[Text])

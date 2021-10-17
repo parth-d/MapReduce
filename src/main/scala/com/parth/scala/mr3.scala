@@ -8,6 +8,7 @@ import org.apache.hadoop.io.{IntWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
 import org.apache.hadoop.mapreduce.{Job, Mapper, Reducer}
+import HelperUtils.CreateLogger
 
 import java.util.regex.Pattern
 import java.lang.Iterable
@@ -28,7 +29,7 @@ object mr3 {
   /**
    * Mapper: Used to group and count accordingly.
    */
-  class Mapper extends Mapper[Object, Text, Text, IntWritable] {
+  class mapper extends Mapper[Object, Text, Text, IntWritable] {
     val one = new IntWritable(1)
     override def map(key: Object, value: Text, context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
 
@@ -50,7 +51,7 @@ object mr3 {
   /**
    * Reducer: Used to count the strings groupwise.
    */
-  class Reducer extends Reducer[Text,IntWritable,Text,IntWritable] {
+  class reducer extends Reducer[Text,IntWritable,Text,IntWritable] {
     override def reduce(key: Text, values: Iterable[IntWritable], context: Reducer[Text, IntWritable, Text, IntWritable]#Context): Unit = {
       val sum = values.asScala.foldLeft(0)(_ + _.get)
       context.write(key, new IntWritable(sum))
@@ -62,7 +63,7 @@ object mr3 {
    */
   def main(args: Array[String]): Unit = {
     import org.apache.hadoop.fs.FileSystem
-    val logger = CreateLogger(classOf[GenerateLogData.type])
+    val logger = CreateLogger(classOf[mr3.type])
     
     /**
      * Extract the necessary parameters from the config file (application.conf)
@@ -91,9 +92,9 @@ object mr3 {
     logger.info("Starting the job.")
     val job = Job.getInstance(configuration,"word count")
     job.setJarByClass(this.getClass)
-    job.setMapperClass(classOf[Mapper])
-    job.setCombinerClass(classOf[Reducer])
-    job.setReducerClass(classOf[Reducer])
+    job.setMapperClass(classOf[mapper])
+    job.setCombinerClass(classOf[reducer])
+    job.setReducerClass(classOf[reducer])
     job.setOutputKeyClass(classOf[Text])
     job.setOutputKeyClass(classOf[Text]);
     job.setOutputValueClass(classOf[IntWritable]);

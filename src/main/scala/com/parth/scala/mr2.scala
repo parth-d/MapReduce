@@ -9,6 +9,7 @@ import org.apache.hadoop.mapred.join.TupleWritable
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
 import org.apache.hadoop.mapreduce.{Job, Mapper, Reducer}
+import HelperUtils.CreateLogger
 
 import java.lang.Iterable
 import java.text.SimpleDateFormat
@@ -130,7 +131,7 @@ object mr2 {
    */
   def main(args: Array[String]): Unit = {
     import org.apache.hadoop.fs.FileSystem
-    val logger = CreateLogger(classOf[GenerateLogData.type])
+    val logger = CreateLogger(classOf[mr2.type])
     
     /**
      * Extract the necessary parameters from the config file (application.conf)

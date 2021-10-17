@@ -11,6 +11,7 @@ import org.apache.hadoop.mapred.join.TupleWritable
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
 import org.apache.hadoop.mapreduce.{Job, Mapper, Reducer}
+import HelperUtils.CreateLogger
 
 import java.lang.Iterable
 import java.text.SimpleDateFormat
@@ -37,6 +38,7 @@ import scala.collection.mutable.ListBuffer
  */
 
 object mr1 {
+  val configfile = ConfigFactory.load()
   /**
    * First mapper: Used to group and count accordingly.
    */
@@ -125,13 +127,12 @@ object mr1 {
 
   def main(): Unit = {
     import org.apache.hadoop.fs.FileSystem
-    val logger = CreateLogger(classOf[GenerateLogData.type])
+    val logger = CreateLogger(classOf[mr1.type])
 
     /**
      * Extract the necessary parameters from the config file (application.conf)
      */
     logger.info("Loading config values")
-    val configfile = ConfigFactory.load()
     val pattern_match = configfile.getString("common.pattern")
     val inp_path = configfile.getString("common.input_path")
     val temp_path = configfile.getString("mr1.temp_path")
