@@ -43,7 +43,6 @@ object mr1 {
   class Mapper1 extends Mapper[Object, Text, Text, IntWritable] {
     val one = new IntWritable(1)
     override def map(key: Object, value: Text, context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
-
       /**
        * Steps to extract necessary parameters from the context passed from the main method.
        */
@@ -173,7 +172,7 @@ object mr1 {
        */
       logger.info("Checking for existing output data.")
       if (fs.exists(new Path(out_path))) fs.delete(new Path(out_path), true)
-
+      
       /**
        * Setup the configuration to be used to pass appropriate values in the context for the job.
        */
