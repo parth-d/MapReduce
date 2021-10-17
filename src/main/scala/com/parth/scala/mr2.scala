@@ -128,7 +128,6 @@ object mr2 {
   /**
    * Driver
    */
-
   def main(args: Array[String]): Unit = {
     import org.apache.hadoop.fs.FileSystem
     val logger = CreateLogger(classOf[GenerateLogData.type])
