@@ -28,7 +28,7 @@ object mr3 {
   /**
    * Mapper: Used to group and count accordingly.
    */
-  class Mappper extends Mapper[Object, Text, Text, IntWritable] {
+  class Mapper extends Mapper[Object, Text, Text, IntWritable] {
     val one = new IntWritable(1)
     override def map(key: Object, value: Text, context: Mapper[Object, Text, Text, IntWritable]#Context): Unit = {
 
@@ -39,7 +39,7 @@ object mr3 {
       val matcher = pattern.matcher(value.toString)
       if (matcher.find()){
         /**
-         * If matched, write to context, the appropriate group number and "one", which will then be used by the reducer to count.
+         * Write to context, the appropriate group number and "one", which will then be used by the reducer to count.
          */
         val message = matcher.group(1)
         context.write(new Text(message), one)
@@ -48,7 +48,7 @@ object mr3 {
   }
 
   /**
-   * First reducer: Used to count the strings groupwise.
+   * Reducer: Used to count the strings groupwise.
    */
   class Reducer extends Reducer[Text,IntWritable,Text,IntWritable] {
     override def reduce(key: Text, values: Iterable[IntWritable], context: Reducer[Text, IntWritable, Text, IntWritable]#Context): Unit = {
@@ -91,7 +91,7 @@ object mr3 {
     logger.info("Starting the job.")
     val job = Job.getInstance(configuration,"word count")
     job.setJarByClass(this.getClass)
-    job.setMapperClass(classOf[Mappper])
+    job.setMapperClass(classOf[Mapper])
     job.setCombinerClass(classOf[Reducer])
     job.setReducerClass(classOf[Reducer])
     job.setOutputKeyClass(classOf[Text])
