@@ -19,6 +19,20 @@ import java.util.regex.Pattern
 import scala.collection.JavaConverters.*
 import scala.collection.mutable.ListBuffer
 
+/**
+ * This class is made to execute the second part of the functionality which shows the distribution of different type of messages across predefined time intervals (application.conf).
+ * First mapreduce job (Filter + count):
+ *  The logic used is to first parse each line and extract the intervals in the matcher. Now, the time is parsed and the log level is parsed.
+ *  The string is then matched with the regex pattern defined in the application.conf file and if it matches, the mapper is instructed to write to context the corresponding time interval, log level and 'one' which is an intWritable.
+ *  Here, the interval number is a value obtained by an algorithm which produces appropriate groups based on the time interval. This logic can be seen in line 67.
+ *  The reducer sums the matched values for each group (time interval, log level).
+ * Second mapreduce job (Sort):
+ *  The logic used is to split each line to extract the interval number and convert it back into mm:ss format to be put in the output. This splitting logic is implemented by the mapper whereas the reducer does not perform any special operation.
+ *
+ * The final output is in the following format:
+ *    Interval start time (mm:ss)  |  Log Level  |  Number of matching strings
+ */
+
 object mr2 {
 
   class Mapper1 extends Mapper[Object, Text, Text, IntWritable] {

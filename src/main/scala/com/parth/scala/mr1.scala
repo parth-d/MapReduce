@@ -1,6 +1,8 @@
 package com.parth.scala
 
+
 import com.typesafe.config.ConfigFactory
+
 import org.apache.commons.beanutils.converters.DateTimeConverter
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -16,6 +18,7 @@ import java.time.LocalTime
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+
 import scala.collection.JavaConverters.*
 import scala.collection.mutable.ListBuffer
 
@@ -26,7 +29,7 @@ import scala.collection.mutable.ListBuffer
  *  The string is then matched with the regex pattern defined in the application.conf file and if it matches, the mapper is instructed to write to context the corresponding time interval, log level and 'one' which is an intWritable.
  *  Here, the interval number is a value obtained by an algorithm which produces appropriate groups based on the time interval. This logic can be seen in line 67.
  *  The reducer sums the matched values for each group (time interval, log level).
- * Second mapreduce job (Sort):
+ * Second mapreduce job (Time_interval correction job):
  *  The logic used is to split each line to extract the interval number and convert it back into mm:ss format to be put in the output. This splitting logic is implemented by the mapper whereas the reducer does not perform any special operation.
  *
  * The final output is in the following format:
@@ -181,15 +184,15 @@ object mr1 {
        * Setup the job with the second mapper and reducer.
        */
       logger.info("Starting second job.")
-      val sort_job = Job.getInstance(config2, "Sort")
-      sort_job.setJarByClass(this.getClass)
-      sort_job.setMapperClass(classOf[Mapper2])
-      sort_job.setReducerClass(classOf[Reducer2])
-      sort_job.setOutputKeyClass(classOf[Text])
-      sort_job.setOutputValueClass(classOf[IntWritable])
-      FileInputFormat.addInputPath(sort_job, new Path(temp_path))
-      FileOutputFormat.setOutputPath(sort_job, new Path(out_path))
-      System.exit(if (sort_job.waitForCompletion(true)) 0 else 1)
+      val time_job = Job.getInstance(config2, "Time interval correction")
+      time_job.setJarByClass(this.getClass)
+      time_job.setMapperClass(classOf[Mapper2])
+      time_job.setReducerClass(classOf[Reducer2])
+      time_job.setOutputKeyClass(classOf[Text])
+      time_job.setOutputValueClass(classOf[IntWritable])
+      FileInputFormat.addInputPath(time_job, new Path(temp_path))
+      FileOutputFormat.setOutputPath(time_job, new Path(out_path))
+      System.exit(if (time_job.waitForCompletion(true)) 0 else 1)
     }
   }
 }
