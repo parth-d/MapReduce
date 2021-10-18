@@ -2,14 +2,13 @@ package com.parth.scala
 
 
 import com.typesafe.config.ConfigFactory
-
 import org.apache.commons.beanutils.converters.DateTimeConverter
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.*
 import org.apache.hadoop.mapred.join.TupleWritable
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
+import org.apache.hadoop.mapreduce.lib.output.{FileOutputFormat, LazyOutputFormat}
 import org.apache.hadoop.mapreduce.{Job, Mapper, Reducer}
 import HelperUtils.CreateLogger
 
@@ -19,7 +18,6 @@ import java.time.LocalTime
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
-
 import scala.collection.JavaConverters.*
 import scala.collection.mutable.ListBuffer
 
@@ -125,7 +123,7 @@ object mr1 {
    * Driver
    */
 
-  def main(): Unit = {
+  def main(args: Array[String]): Unit = {
     import org.apache.hadoop.fs.FileSystem
     val logger = CreateLogger(classOf[mr1.type])
 
