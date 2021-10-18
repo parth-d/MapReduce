@@ -9,7 +9,7 @@
 | Email | [pdeshp8@uic.edu](mailto:pdeshp8@uic.edu)
 | YouTube Link (AWS EMR) | [YouTube](https://www.youtube.com/watch?v=saT0XpBJd0M&t=3s)
 
-##Explanation
+## Explanation
 The project involves basic log processing using mappers and reduces to extract the necessary and appropriate information from the log files.
 
 ## Important Files
@@ -29,7 +29,7 @@ Name | Description |
 5. Copy the jar file in the cluster OS, execute it using `hadoop jar <jar file> <class name>`
    1. Here, the class name can either be 'com.parth.scala.mr<1/2/3/4>'
 
-##AWS Instructions
+## AWS Instructions
 1. Register/ login to [AWS](https://aws.amazon.com)
 2. Setup billing notifications (Optional)
 3. Configure your security groups to allow traffic from your local machine IP.
@@ -40,7 +40,7 @@ Name | Description |
 8. Create a step and add the jar by using the `s3:.....` address.
 9. Once the executing is completed and the status is shown as `completed`, the output files can be extracted from `/user/hadoop/mr<1/2/3/4>/output`.
 
-##Classes
+## Classes
 ### 1. [mr1.scala](src/main/scala/com/parth/scala/mr1.scala)
 This class is used to implement `the distribution of different types of messages across predefined time intervals and injected string instances of the designated regex pattern for these log message types`.
 The execution is divided into a chain of two mapper-reducer pairs. The first mapreduce is used to filter out all the log messages and group them according to the predefined time interval duration. This results in an output with the first column being an abstract group number and second column holding the count of matching strings in that specific time interval.
@@ -83,8 +83,8 @@ Class | Use
 Mapper1 | Split log messages based on their log level as the key and their length as the value if they match the predefined regex pattern
 Reducer1 | Find maximum length of string for each group
 
-##Sample Results
-###Parameters used 
+## Sample Results
+### Parameters used 
 
 Parameter | Value
 :---: | :---:
@@ -93,7 +93,7 @@ Input file | [Log File](results/input_log.log)
 Input files location (Hortonworks/AWS) | `/user/hadoop/input`
 Output files location (Hortonworks/AWS) | `/user/hadoop/mr<1/2/3/4>/output`
 
-###Log Generator Parameters
+### Log Generator Parameters
 
 Parameter | Value
 :---: | :---:
