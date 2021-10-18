@@ -9,6 +9,7 @@
 | Email | [pdeshp8@uic.edu](mailto:pdeshp8@uic.edu)
 | YouTube Link (AWS EMR) | [YouTube](https://www.youtube.com/watch?v=saT0XpBJd0M&t=3s)
 
+
 ## Explanation
 The project involves basic log processing using mappers and reduces to extract the necessary and appropriate information from the log files.
 
