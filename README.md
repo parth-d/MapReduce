@@ -89,8 +89,9 @@ Reducer1 | Find maximum length of string for each group
 Parameter | Value
 :---: | :---:
 Time interval length | 2 seconds
-Input files location | `/user/hadoop/input`
-Output files location | `/user/hadoop/mr<1/2/3/4>/output`
+Input file | [Log File](results/input_log.log)
+Input files location (Hortonworks/AWS) | `/user/hadoop/input`
+Output files location (Hortonworks/AWS) | `/user/hadoop/mr<1/2/3/4>/output`
 
 ###Log Generator Parameters
 
