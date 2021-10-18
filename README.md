@@ -67,13 +67,39 @@ Reducer2 | Pass
 
 ### 3. [mr3.scala](src/main/scala/com/parth/scala/mr3.scala)
 This class is used to implement `for each message type you will produce the number of the generated log messages`.
-The execution is divided in two sets of mapreduce pairs as before, however, the second map reduce job also implements a `WritableComparator` which is used to sort the output in descending order instead of ascending.
+The execution uses a mapreduce job to split messages using their log level.
 
 Class | Use
 :---: | :---:
-Mapper1 | Pattern match and find error level log messages
-Reducer1 | Find sum of matching strings group wise
-Mapper2 | Convert abstract group numbers to timestamp values
-Comparator | Sort in descending order of number of matches
-Reducer2 | Pass
-##Result parameters and screenshots
+Mapper1 | Split log messages based on their log level as the key
+Reducer1 | Find sum of log messages for each type
+
+### 3. [mr4.scala](src/main/scala/com/parth/scala/mr4.scala)
+This class is used to return `the number of characters in each log message for each log message type that contain the highest number of characters in the detected instances of the designated regex pattern.`.
+The execution uses a mapreduce job to find the maximum number of characters for each log message matching the predefined regex pattern.
+
+Class | Use
+:---: | :---:
+Mapper1 | Split log messages based on their log level as the key and their length as the value if they match the predefined regex pattern
+Reducer1 | Find maximum length of string for each group
+
+##Sample Results
+###Parameters used 
+
+Parameter | Value
+:---: | :---:
+Time interval length | 2 seconds
+Input files location | `/user/hadoop/input`
+Output files location | `/user/hadoop/mr<1/2/3/4>/output`
+
+###Log Generator Parameters
+
+Parameter | Value
+:---: | :---:
+Pattern Frequency | 0.25
+
+### Results
+1. mr1 : [Here](results/output-r-00000_mr1)
+2. mr2 : [Here](results/part-r-00000_mr2)
+3. mr3 : [Here](results/part-r-00000_mr3)
+4. mr4 : [Here](results/part-r-00000_mr4)
