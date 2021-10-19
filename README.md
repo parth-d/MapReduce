@@ -54,6 +54,13 @@ Reducer1 | Find sum of matching strings group wise
 Mapper2 | Convert abstract group numbers to timestamp values
 Reducer2 | Pass
 
+#### Output
+Column | Name | Description
+| :---: | :---:| :---: |
+1 | Time Stamp | The starting timestamp of that interval
+2 | Log Level | The logging level considered for this value
+3 | Count | Count of the matching strings
+
 ### 2. [mr2.scala](src/main/scala/com/parth/scala/mr2.scala)
 This class is used to return `the time intervals sorted in the descending order that contained most log messages of the type ERROR with injected regex pattern string instances`.
 The execution is divided in two sets of mapreduce pairs as before, however, the second map reduce job also implements a `WritableComparator` which is used to sort the output in descending order instead of ascending.
@@ -66,6 +73,13 @@ Mapper2 | Convert abstract group numbers to timestamp values
 Comparator | Sort in descending order of number of matches
 Reducer2 | Pass
 
+#### Output
+Column | Name | Description
+| :---: | :---:| :---: |
+1 | Count | Count of the matching strings
+2 | Time Stamp | The starting timestamp of that interval
+
+
 ### 3. [mr3.scala](src/main/scala/com/parth/scala/mr3.scala)
 This class is used to implement `for each message type you will produce the number of the generated log messages`.
 The execution uses a mapreduce job to split messages using their log level.
@@ -75,6 +89,12 @@ Class | Use
 Mapper1 | Split log messages based on their log level as the key
 Reducer1 | Find sum of log messages for each type
 
+#### Output
+Column | Name | Description
+| :---: | :---:| :---: |
+1 | Log Level | The logging level considered for this value
+2 | Count | Count of the strings in that level
+
 ### 3. [mr4.scala](src/main/scala/com/parth/scala/mr4.scala)
 This class is used to return `the number of characters in each log message for each log message type that contain the highest number of characters in the detected instances of the designated regex pattern.`.
 The execution uses a mapreduce job to find the maximum number of characters for each log message matching the predefined regex pattern.
@@ -83,6 +103,12 @@ Class | Use
 :---: | :---:
 Mapper1 | Split log messages based on their log level as the key and their length as the value if they match the predefined regex pattern
 Reducer1 | Find maximum length of string for each group
+
+#### Output
+Column | Name | Description
+| :---: | :---:| :---: |
+1 | Log Level | The logging level considered for this value
+2 | Count | Maximum length of matching string for this log level
 
 ## Sample Results
 ### Parameters used 
